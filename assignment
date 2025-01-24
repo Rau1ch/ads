@@ -1,0 +1,166 @@
+#include <iostream>
+#include <string>
+#include <queue>            // -> our library
+#include <vector>
+#include <iomanip> 
+
+using namespace std; // -> fpr std::;
+
+struct Order {
+    int orderId;
+    string customerName;
+    string restaurantName; // -> For Order
+    string foodItem;
+    int deliveryTime;
+
+    Order(int id, string customer, string restaurant, string food, int time)
+        : orderId(id), customerName(customer), restaurantName(restaurant), foodItem(food), deliveryTime(time) {}
+
+    
+    bool operator<(const Order& other) const {
+        return deliveryTime > other.deliveryTime;
+    }
+};
+
+class FoodDeliverySystem {
+private:
+    queue<Order> orderQueue;
+    priority_queue<Order> deliveryQueue; // -> main system for our delivery 
+    int nextOrderId;
+
+public:
+    FoodDeliverySystem() : nextOrderId(1) {}
+
+    void placeOrder(const string& customerName, const string& restaurantName, const string& foodItem, int deliveryTime) {
+        if (deliveryTime <= 0) {
+            cout << "Invalid delivery time. Time must be more than 0 minutes.\n";
+            return;
+        }
+        Order newOrder(nextOrderId++, customerName, restaurantName, foodItem, deliveryTime);
+        orderQueue.push(newOrder);
+        cout << "Order placed successfully! Order ID: " << newOrder.orderId << endl;
+    }
+
+    void processOrder() {
+        if (orderQueue.empty()) {
+            cout << "No orders to process." << endl;
+            return;
+        }
+
+        Order nextOrder = orderQueue.front();
+        orderQueue.pop();
+        deliveryQueue.push(nextOrder);
+        cout << "Order ID " << nextOrder.orderId << " is now being prepared for delivery." << endl;
+    }
+
+    void deliverOrder() {
+        if (deliveryQueue.empty()) {
+            cout << "No orders ready for delivery." << endl;
+            return;
+        }
+
+        Order nextDelivery = deliveryQueue.top();
+        deliveryQueue.pop();
+        cout << "Order ID " << nextDelivery.orderId << " (" << nextDelivery.foodItem << ") is out for delivery to "
+            << nextDelivery.customerName << "." << endl;
+    }
+
+    void viewPendingOrders() {
+        if (orderQueue.empty()) {
+            cout << "No pending orders." << endl;
+            return;
+        }
+
+        cout << "\nPending Orders in Queue:\n";
+        cout << left << setw(10) << "Order ID" << setw(20) << "Customer" << setw(20) << "Restaurant"
+            << setw(20) << "Food" << setw(15) << "Delivery Time\n";
+        cout << string(75, '-') << endl;
+
+        queue<Order> tempQueue = orderQueue;
+        while (!tempQueue.empty()) {
+            Order order = tempQueue.front();
+            tempQueue.pop();
+            cout << left << setw(10) << order.orderId << setw(20) << order.customerName
+                << setw(20) << order.restaurantName << setw(20) << order.foodItem
+                << setw(15) << order.deliveryTime << " mins\n";
+        }
+    }
+
+    void viewDeliveryQueue() {
+        if (deliveryQueue.empty()) {
+            cout << "No orders in delivery queue." << endl;
+            return;
+        }
+
+        cout << "\nOrders Ready for Delivery:\n";
+        cout << left << setw(10) << "Order ID" << setw(20) << "Customer" << setw(20) << "Restaurant"
+            << setw(20) << "Food" << setw(15) << "Delivery Time\n";
+        cout << string(75, '-') << endl;
+
+        priority_queue<Order> tempHeap = deliveryQueue;
+        while (!tempHeap.empty()) {
+            Order order = tempHeap.top();
+            tempHeap.pop();
+            cout << left << setw(10) << order.orderId << setw(20) << order.customerName
+                << setw(20) << order.restaurantName << setw(20) << order.foodItem
+                << setw(15) << order.deliveryTime << " mins\n";
+        }
+    }
+};
+
+void menu() {
+    FoodDeliverySystem system;
+    int choice;
+
+    do {
+        cout << "\n--- Food Delivery System ---\n";
+        cout << "1. Place Order\n";
+        cout << "2. Process Order\n";
+        cout << "3. Deliver Order\n";
+        cout << "4. View Pending Orders\n";
+        cout << "5. View Delivery Queue\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: {
+            string customerName, restaurantName, foodItem;
+            int deliveryTime;
+            cin.ignore();
+            cout << "Enter customer name: ";
+            getline(cin, customerName);
+            cout << "Enter restaurant name: ";
+            getline(cin, restaurantName);
+            cout << "Enter food item: ";
+            getline(cin, foodItem);
+            cout << "Enter delivery time (in minutes): ";
+            cin >> deliveryTime;
+            system.placeOrder(customerName, restaurantName, foodItem, deliveryTime);
+            break;
+        }
+        case 2:
+            system.processOrder();
+            break;
+        case 3:
+            system.deliverOrder();
+            break;
+        case 4:
+            system.viewPendingOrders();
+            break;
+        case 5:
+            system.viewDeliveryQueue();
+            break;
+        case 6:
+            cout << "Exiting system." << endl;
+            break;
+        default:
+            cout << "Invalid choice. Try again." << endl;
+        }
+    } while (choice != 6);
+}
+
+int main() {
+    menu();
+    return 0;
+}
